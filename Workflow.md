@@ -213,16 +213,16 @@ These subsystems are on the *critical path* and require the most coordination an
 
 ```mermaid
 graph LR
-    page[(2.1) Page & BufferPool]
-    wal[(2.2) WAL + LSN]
-    recovery[(4.1) Checkpoint & Recovery]
-    bptree[(3.1) B+ Tree]
-    lsm[(1.1) LSM-Tree + Compaction]
-    txn[(1.3,4.1) Transaction Manager + MVCC]
-    net[(5.1) Network Layer]
-    optimizer[(3.2) Query Optimizer]
-    metrics[(7.1) Monitoring & Metrics]
-    secondary[(3.1) Secondary Indexes]
+    page["(2.1) Page & BufferPool"]
+    wal["(2.2) WAL + LSN"]
+    recovery["(4.1) Checkpoint & Recovery"]
+    bptree["(3.1) B+ Tree"]
+    lsm["(1.1) LSM-Tree + Compaction"]
+    txn["(1.3,4.1) Transaction Manager + MVCC"]
+    net["(5.1) Network Layer"]
+    optimizer["(3.2) Query Optimizer"]
+    metrics["(7.1) Monitoring & Metrics"]
+    secondary["(3.1) Secondary Indexes"]
 
     wal --> recovery
     page --> bptree
@@ -240,13 +240,13 @@ graph LR
     txn --> secondary
 
     %% Step-order emphasis for Minimal Viable Critical Path
-    subgraph MVC [Minimal Viable Critical Path]
+    subgraph MVC ["Minimal Viable Critical Path"]
       page
       wal
       recovery
-      kv_api[(KV API: put/get/delete)]
+      kv_api["KV API: put/get/delete"]
       txn
-      index[(basic index: B+ or LSM memtable+SSTable)]
+      index["basic index: B+ or LSM memtable+SSTable"]
     end
 
     wal --> kv_api
