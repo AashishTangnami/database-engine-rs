@@ -213,51 +213,86 @@ These subsystems are on the *critical path* and require the most coordination an
 
 ```mermaid
 graph LR
-    page["(2.1) Page & BufferPool"]
-    wal["(2.2) WAL + LSN"]
-    recovery["(4.1) Checkpoint & Recovery"]
-    bptree["(3.1) B+ Tree"]
-    lsm["(1.1) LSM-Tree + Compaction"]
-    txn["(1.3,4.1) Transaction Manager + MVCC"]
-    net["(5.1) Network Layer"]
-    optimizer["(3.2) Query Optimizer"]
-    metrics["(7.1) Monitoring & Metrics"]
-    secondary["(3.1) Secondary Indexes"]
+    %% Step 1-3: Foundation (Critical Path)
+    page["1️⃣ (2.1) Page & BufferPool"]
+    wal["2️⃣ (2.2) WAL + LSN"]
+    recovery["3️⃣ (4.1) Checkpoint & Recovery"]
+    
+    %% Step 4-5: Basic Storage
+    bptree["4️⃣ (3.1) B+ Tree"]
+    lsm["5️⃣ (1.1) LSM-Tree + Compaction"]
+    
+    %% Step 6-7: Transaction System
+    txn["6️⃣ Transaction Manager + Group Commit"]
+    mvcc["7️⃣ MVCC + LSN Visibility"]
+    
+    %% Step 8-12: Advanced Features
+    io_opt["8️⃣ I/O Optimizations (io_uring)"]
+    optimizer["9️⃣ Execution Engine & Optimizer"]
+    network["🔟 Protocol Server (Tokio)"]
+    monitoring["1️⃣1️⃣ Monitoring & Logging"]
+    testing["1️⃣2️⃣ Stress Tests & Benchmarks"]
 
+    %% Critical Path Dependencies
+    page --> wal
     wal --> recovery
     page --> bptree
-    page --> recovery
-    wal --> txn
+    page --> lsm
     wal --> lsm
+    recovery --> txn
+    wal --> txn
     page --> txn
+    
+    %% Storage Dependencies
     bptree --> txn
     lsm --> txn
-    txn --> optimizer
-    txn --> net
-    optimizer --> net
-    txn --> metrics
-    bptree --> secondary
-    txn --> secondary
+    txn --> mvcc
+    lsm --> mvcc
+    
+    %% Advanced Dependencies
+    mvcc --> io_opt
+    txn --> io_opt
+    mvcc --> optimizer
+    bptree --> optimizer
+    lsm --> optimizer
+    
+    %% Network & Final Features
+    optimizer --> network
+    txn --> network
+    network --> monitoring
+    txn --> monitoring
+    monitoring --> testing
+    network --> testing
 
-    %% Step-order emphasis for Minimal Viable Critical Path
-    subgraph MVC ["Minimal Viable Critical Path"]
+    %% Step Groups
+    subgraph CriticalPath ["Steps 1-3: Critical Foundation"]
       page
       wal
       recovery
-      kv_api["KV API: put/get/delete"]
-      txn
-      index["basic index: B+ or LSM memtable+SSTable"]
     end
-
-    wal --> kv_api
-    page --> kv_api
-    kv_api --> txn
-    index --> kv_api
+    
+    subgraph BasicStorage ["Steps 4-5: Basic Storage"]
+      bptree
+      lsm
+    end
+    
+    subgraph TransactionSystem ["Steps 6-7: Transaction System"]
+      txn
+      mvcc
+    end
+    
+    subgraph AdvancedFeatures ["Steps 8-12: Advanced Features"]
+      io_opt
+      optimizer
+      network
+      monitoring
+      testing
+    end
 ```
 
 > **Render tips:** GitHub and GitLab will render Mermaid blocks inline. For static docs, you can pre-render with Mermaid CLI or convert to SVG.
 
-### Graphviz DOT (Graphviz / CI diagrams)
+### Graphviz DOT (for external rendering)
 
 ```dot
 digraph DatabaseEngine {
@@ -292,7 +327,10 @@ digraph DatabaseEngine {
 }
 ```
 
-> **Render tips:** use `dot -Tpng file.dot -o out.png` or `dot -Tsvg file.dot -o out.svg`. Use `rankdir=LR` for left-to-right layout.
+> **Render tips:** 
+> - **GitHub**: The Mermaid version above will render natively in GitHub/GitLab
+> - **External tools**: Use `dot -Tpng file.dot -o out.png` or `dot -Tsvg file.dot -o out.svg` for the DOT version
+> - **Layout**: Both use left-to-right layout (`rankdir=LR` in DOT, `graph LR` in Mermaid)
 
 ---
 
