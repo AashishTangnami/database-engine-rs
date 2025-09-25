@@ -1,165 +1,177 @@
-Phase 1: Foundation & Architecture Design
-│
-├── (1.1) Core Architecture
-│   ├── LSM-Tree (for write-heavy)
-│   ├── B+ Tree (for read-heavy/range queries)
-│   └── Hybrid approach (LSM + B+ compaction)
-│
-├── (1.2) Memory Management
-│   ├── Arena allocation
-│   ├── Object pooling
-│   ├── Memory-mapped files (mmap)
-│   ├── NUMA-aware allocation
-│   └── Jemalloc/Mimalloc allocator
-│
-└── (1.3) Concurrency Model
-    ├── Lock-free data structures (CAS, atomics)
-    ├── RCU (read-copy-update)
-    ├── Sharding/Partitioning
-    ├── Tokio async runtime
-    ├── Work-stealing thread pools
-    └── MVCC (Multi-Version Concurrency Control)
+# Rust Database Engine Development Workflow
 
-─────────────────────────────────────────────
-Phase 2: Storage Layer Implementation
-│
-├── (2.1) Page Management
-│   ├── Fixed-size pages (4KB–16KB)
-│   ├── Buffer pool with LRU/LFU eviction
-│   ├── Dirty page tracking
-│   └── Page compression (LZ4/Snappy/Zstd)
-│
-├── (2.2) Write-Ahead Logging (WAL)
-│   ├── Group commit batching
-│   ├── Async WAL writes + periodic fsync
-│   ├── WAL compression
-│   ├── Parallel WAL writing
-│   └── WAL segmentation
-│
-└── (2.3) Storage Formats
-    ├── Cap’n Proto / Protobuf for schema evolution
-    ├── Custom binary format for hot paths
-    ├── Columnar storage (analytics)
-    └── Delta compression (temporal data)
+## Phase 1: Foundation & Architecture Design
 
-─────────────────────────────────────────────
-Phase 3: Indexing & Query Processing
-│
-├── (3.1) Index Structures
-│   ├── Primary: B+ Tree
-│   ├── Secondary: Hash index
-│   ├── Bitmap indexes
-│   ├── Bloom filters
-│   └── Skip lists
-│
-└── (3.2) Query Optimization
-    ├── Vectorized execution
-    ├── Code generation (JIT for hot queries)
-    ├── Cost-based optimizer with stats
-    ├── Predicate pushdown
-    └── Index-only scans
+### (1.1) Core Architecture
+- LSM-Tree (for write-heavy)
+- B+ Tree (for read-heavy/range queries)
+- Hybrid approach (LSM + B+ compaction)
 
-─────────────────────────────────────────────
-Phase 4: Transaction Management
-│
-├── (4.1) ACID Implementation
-│   ├── Atomicity → Undo logs
-│   ├── Consistency → Constraint checks
-│   ├── Isolation → MVCC, Snapshot Isolation
-│   └── Durability → WAL + Checkpointing
-│
-└── (4.2) Lock Management
-    ├── Intention locks (hierarchical)
-    ├── Row-level locks
-    ├── Deadlock detection/resolution
-    └── Lock-free algorithms (preferred where possible)
+### (1.2) Memory Management
+- Arena allocation
+- Object pooling
+- Memory-mapped files (mmap)
+- NUMA-aware allocation
+- Jemalloc/Mimalloc allocator
 
-─────────────────────────────────────────────
-Phase 5: Network & Protocol Layer
-│
-├── (5.1) Network Architecture
-│   ├── Async I/O (epoll/kqueue, Tokio)
-│   ├── TCP_NODELAY + SO_REUSEPORT
-│   └── Custom binary protocol
-│
-└── (5.2) Client Connection Management
-    ├── Connection multiplexing
-    ├── Prepared statement caching
-    ├── Result set streaming
-    └── Network compression
+### (1.3) Concurrency Model
+- Lock-free data structures (CAS, atomics)
+- RCU (read-copy-update)
+- Sharding/Partitioning
+- Tokio async runtime
+- Work-stealing thread pools
+- MVCC (Multi-Version Concurrency Control)
 
-─────────────────────────────────────────────
-Phase 6: Performance Optimization
-│
-├── (6.1) CPU Optimization
-│   ├── Branch prediction-aware code
-│   ├── SIMD instructions
-│   ├── Cache-friendly layouts (SoA/AoS)
-│   ├── Avoid false sharing
-│   └── Profiling (Criterion, perf, flamegraph)
-│
-├── (6.2) Memory Optimization
-│   ├── Eliminate padding
-│   ├── Prefetching
-│   ├── Huge pages
-│   └── Bandwidth-efficient access
-│
-└── (6.3) I/O Optimization
-    ├── Direct I/O (O_DIRECT)
-    ├── io_uring (Linux async I/O)
-    ├── Read-ahead
-    ├── Write coalescing
-    └── SSD-optimized patterns
+---
 
-─────────────────────────────────────────────
-Phase 7: Monitoring & Observability
-│
-├── (7.1) Metrics Collection
-│   ├── Latency (p95, p99)
-│   ├── Throughput (TPS, QPS)
-│   ├── Cache hit ratio
-│   └── Resource utilization (CPU, memory, disk)
-│
-└── (7.2) Logging & Debugging
-    ├── Structured logging (JSON)
-    ├── Async log writes
-    ├── Log filtering (levels)
-    └── Distributed tracing
+## Phase 2: Storage Layer Implementation
 
-─────────────────────────────────────────────
-Phase 8: Testing & Benchmarking
-│
-├── (8.1) Testing
-│   ├── Unit + integration tests
-│   ├── Property-based tests (QuickCheck)
-│   ├── Fuzzing
-│   ├── Stress/load testing
-│   └── Chaos testing
-│
-└── (8.2) Benchmarking
-    ├── YCSB for key-value
-    ├── TPC-C (OLTP)
-    ├── TPC-H (OLAP)
-    └── Custom microbenchmarks
+### (2.1) Page Management
+- Fixed-size pages (4KB–16KB)
+- Buffer pool with LRU/LFU eviction
+- Dirty page tracking
+- Page compression (LZ4/Snappy/Zstd)
 
-─────────────────────────────────────────────
-Phase 9: Advanced Features
-│
-├── (9.1) Replication & HA
-│   ├── Streaming replication
-│   ├── Logical replication
-│   ├── Multi-master with conflict resolution
-│   └── Consensus (Raft/Paxos/PBFT)
-│
-└── (9.2) Partitioning & Sharding
-    ├── Range partitioning
-    ├── Hash partitioning
-    ├── Consistent hashing
-    └── Composite strategies
+### (2.2) Write-Ahead Logging (WAL)
+- Group commit batching
+- Async WAL writes + periodic fsync
+- WAL compression
+- Parallel WAL writing
+- WAL segmentation
+
+### (2.3) Storage Formats
+- Cap'n Proto / Protobuf for schema evolution
+- Custom binary format for hot paths
+- Columnar storage (analytics)
+- Delta compression (temporal data)
+
+---
+
+## Phase 3: Indexing & Query Processing
+
+### (3.1) Index Structures
+- Primary: B+ Tree
+- Secondary: Hash index
+- Bitmap indexes
+- Bloom filters
+- Skip lists
+
+### (3.2) Query Optimization
+- Vectorized execution
+- Code generation (JIT for hot queries)
+- Cost-based optimizer with stats
+- Predicate pushdown
+- Index-only scans
+
+---
+
+## Phase 4: Transaction Management
+
+### (4.1) ACID Implementation
+- Atomicity → Undo logs
+- Consistency → Constraint checks
+- Isolation → MVCC, Snapshot Isolation
+- Durability → WAL + Checkpointing
+
+### (4.2) Lock Management
+- Intention locks (hierarchical)
+- Row-level locks
+- Deadlock detection/resolution
+- Lock-free algorithms (preferred where possible)
+
+---
+
+## Phase 5: Network & Protocol Layer
+
+### (5.1) Network Architecture
+- Async I/O (epoll/kqueue, Tokio)
+- TCP_NODELAY + SO_REUSEPORT
+- Custom binary protocol
+
+### (5.2) Client Connection Management
+- Connection multiplexing
+- Prepared statement caching
+- Result set streaming
+- Network compression
+
+---
+
+## Phase 6: Performance Optimization
+
+### (6.1) CPU Optimization
+- Branch prediction-aware code
+- SIMD instructions
+- Cache-friendly layouts (SoA/AoS)
+- Avoid false sharing
+- Profiling (Criterion, perf, flamegraph)
+
+### (6.2) Memory Optimization
+- Eliminate padding
+- Prefetching
+- Huge pages
+- Bandwidth-efficient access
+
+### (6.3) I/O Optimization
+- Direct I/O (O_DIRECT)
+- io_uring (Linux async I/O)
+- Read-ahead
+- Write coalescing
+- SSD-optimized patterns
+
+---
+
+## Phase 7: Monitoring & Observability
+
+### (7.1) Metrics Collection
+- Latency (p95, p99)
+- Throughput (TPS, QPS)
+- Cache hit ratio
+- Resource utilization (CPU, memory, disk)
+
+### (7.2) Logging & Debugging
+- Structured logging (JSON)
+- Async log writes
+- Log filtering (levels)
+- Distributed tracing
+
+---
+
+## Phase 8: Testing & Benchmarking
+
+### (8.1) Testing
+- Unit + integration tests
+- Property-based tests (QuickCheck)
+- Fuzzing
+- Stress/load testing
+- Chaos testing
+
+### (8.2) Benchmarking
+- YCSB for key-value
+- TPC-C (OLTP)
+- TPC-H (OLAP)
+- Custom microbenchmarks
+
+---
+
+## Phase 9: Advanced Features
+
+### (9.1) Replication & HA
+- Streaming replication
+- Logical replication
+- Multi-master with conflict resolution
+- Consensus (Raft/Paxos/PBFT)
+
+### (9.2) Partitioning & Sharding
+- Range partitioning
+- Hash partitioning
+- Consistent hashing
+- Composite strategies
 
 
 
-# Dependency-aware Build Plan — Markdown
+---
+
+# Dependency-aware Build Plan
 
 This document is the **dependency-first, engineering-actionable plan** for the Rust database engine. It preserves the *critical path*, surfaces highest cognitive-load components, and provides **visual step-by-step relation graphs** (Mermaid + DOT) that you can drop into docs or CI.
 
@@ -197,12 +209,10 @@ These subsystems are on the *critical path* and require the most coordination an
 
 ## 2. Dependency graph (visual)
 
-Below are two renderable formats you can drop directly into markdown or docs. Use the Mermaid block for GitHub/GitLab Markdown rendering, and the DOT block for Graphviz rendering.
-
 ### Mermaid (recommended for Markdown docs)
 
 ```mermaid
-flowchart LR
+graph LR
     page[(2.1) Page & BufferPool]
     wal[(2.2) WAL + LSN]
     recovery[(4.1) Checkpoint & Recovery]
